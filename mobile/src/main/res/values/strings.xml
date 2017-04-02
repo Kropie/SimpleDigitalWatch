@@ -1,0 +1,9 @@
+<resources>
+    <string name="config_black_label_text">Black</string>
+    <string name="config_white_label_text">White</string>
+    <string name="config_black_id">id_black</string>
+    <string name="config_white_id">id_white</string>
+    <string name="iv_black_background_id">iv_black_background</string>
+    <string name="iv_red_background_id">iv_red_background</string>
+    <string name="iv_blue_background_id">iv_blue_background</string>
+</resources>

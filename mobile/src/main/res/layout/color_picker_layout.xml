@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:singleLine="false"
+        android:text="Select a color"
+        android:textAlignment="center" />
+
+    <ImageView
+        android:id="@+id/iv_black_background"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:srcCompat="@color/black_background" />
+
+    <ImageView
+        android:id="@+id/iv_red_background"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:srcCompat="@color/red_background" />
+
+    <ImageView
+        android:id="@+id/iv_blue_background"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:srcCompat="@color/blue_background" />
+</LinearLayout>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/ll_digital_watch_Config"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/editText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:singleLine="false"
+            android:text="Select a color"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/iv_black_background"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_margin="10dp"
+            android:adjustViewBounds="false"
+            android:hapticFeedbackEnabled="true"
+            android:visibility="visible"
+            app:srcCompat="@color/black_background" />
+
+        <ImageView
+            android:id="@+id/iv_red_background"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_margin="10dp"
+            android:hapticFeedbackEnabled="true"
+            android:visibility="visible"
+            app:srcCompat="@color/red_background" />
+
+        <ImageView
+            android:id="@+id/iv_blue_background"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_margin="10dp"
+            android:hapticFeedbackEnabled="true"
+            android:visibility="visible"
+            app:srcCompat="@color/blue_background" />
+    </LinearLayout>
+</ScrollView>
