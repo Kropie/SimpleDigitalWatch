@@ -90,6 +90,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         float mXOffset;
         float mYOffset;
+        float timeX;
+        float timeY;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -268,28 +270,28 @@ public class MyWatchFace extends CanvasWatchFaceService {
             updateTimer();
         }
 
-        /**
-         * Captures tap event (and tap type) and toggles the background color if the user finishes
-         * a tap.
-         */
-        @Override
-        public void onTapCommand(int tapType, int x, int y, long eventTime) {
-            switch (tapType) {
-                case TAP_TYPE_TOUCH:
-                    // The user has started touching the screen.
-                    break;
-                case TAP_TYPE_TOUCH_CANCEL:
-                    // The user has started a different gesture or otherwise cancelled the tap.
-                    break;
-                case TAP_TYPE_TAP:
-                    // The user has completed the tap gesture.
-                    // TODO: Add code to handle the tap gesture.
-                    Toast.makeText(getApplicationContext(), R.string.message, Toast.LENGTH_SHORT)
-                            .show();
-                    break;
-            }
-            invalidate();
-        }
+//        /**
+//         * Captures tap event (and tap type) and toggles the background color if the user finishes
+//         * a tap.
+//         */
+//        @Override
+//        public void onTapCommand(int tapType, int x, int y, long eventTime) {
+//            switch (tapType) {
+//                case TAP_TYPE_TOUCH:
+//                    // The user has started touching the screen.
+//                    break;
+//                case TAP_TYPE_TOUCH_CANCEL:
+//                    // The user has started a different gesture or otherwise cancelled the tap.
+//                    break;
+//                case TAP_TYPE_TAP:
+//                    // The user has completed the tap gesture.
+//                    // TODO: Add code to handle the tap gesture.
+//                    Toast.makeText(getApplicationContext(), R.string.message, Toast.LENGTH_SHORT)
+//                            .show();
+//                    break;
+//            }
+//            invalidate();
+//        }
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
@@ -314,70 +316,34 @@ public class MyWatchFace extends CanvasWatchFaceService {
             // If the time is midnight and the time is "0" change the hour value to "12"
             int hour = mCalendar.get(Calendar.HOUR);
             hour = (hour == 0) ? hour + 12 : hour;
-            return String.format(Locale.US, "%d:%02d:%02d", hour,
-                    mCalendar.get(Calendar.MINUTE), mCalendar.get(Calendar.SECOND));
+            String time = String.format(Locale.US, "%02d:%02d", hour, mCalendar.get(Calendar.MINUTE));
+
+            // If not ambient return time without seconds.
+            if (mAmbient) {
+                return time;
+            }
+
+            // If ambient return time with seconds.
+            return String.format(Locale.US, "%s:%02d", time, mCalendar.get(Calendar.SECOND));
         }
 
         private void drawTimeText(Canvas canvas, Rect bounds) {
             String text = getTimeText();
-            String separatorText = ":";
-            String spacingText = "0";
+            String defaultText = text.substring(0, text.length() - 3) + ":00";
 
-            Rect minutesTextBounds = new Rect();
-            Rect hoursTextBounds = new Rect();
-            Rect secondsTextBounds = new Rect();
-            Rect separatorTextBounds = new Rect();
-            Rect spacingTextBounds = new Rect();
+            Rect textBounds = new Rect();
 
-            float hoursX;
-            float hoursY;
             float minutesX;
             float minutesY;
-            float secondsX;
-            float secondsY;
-            float separatorX;
-            float separatorY;
-            float spacing;
-
-            String[] timeTextParts = text.split(separatorText);
-            String hoursText = timeTextParts[0];
-            String minutesText = timeTextParts[1];
-            String secondText = timeTextParts[2];
 
             // Use the same text for all times to ensure that the watch face does not move as the
             // time changes
             mMinutesTextPaint.setTextAlign(Paint.Align.LEFT);
-            mHoursTextPaint.setTextAlign(Paint.Align.LEFT);
-            mSecondsTextPaint.setTextAlign(Paint.Align.LEFT);
+            mMinutesTextPaint.getTextBounds(defaultText, 0, defaultText.length(), textBounds);
 
-            mMinutesTextPaint.getTextBounds(minutesText, 0, minutesText.length(), minutesTextBounds);
-            mHoursTextPaint.getTextBounds(hoursText, 0, hoursText.length(), hoursTextBounds);
-            mSecondsTextPaint.getTextBounds(secondText, 0, secondText.length(), secondsTextBounds);
-            mMinutesTextPaint.getTextBounds(spacingText, 0, spacingText.length(), spacingTextBounds);
-
-            spacing = spacingTextBounds.width();
-
-            minutesX = bounds.width() / 2f - minutesTextBounds.right;
-            minutesY = bounds.height() / 2f + minutesTextBounds.height() / 2f - minutesTextBounds.bottom;
-            canvas.drawText(minutesText, minutesX, minutesY, mMinutesTextPaint);
-
-            separatorX = minutesX - spacing;
-            separatorY = minutesY;
-            canvas.drawText(separatorText, separatorX, separatorY, mMinutesTextPaint);
-
-            hoursX = minutesX - hoursTextBounds.right - spacing;
-            hoursY = minutesY;
-            canvas.drawText(hoursText, hoursX, hoursY, mHoursTextPaint);
-
-            secondsX = minutesX + secondsTextBounds.height() + spacing;
-            secondsY = minutesY;
-            canvas.drawText(secondText, secondsX, secondsY, mSecondsTextPaint);
-
-            separatorX = secondsX - spacing;
-            separatorY = secondsY;
-            canvas.drawText(separatorText, separatorX, separatorY, mSecondsTextPaint);
-
-            mMinutesTextPaint.getTextBounds(hoursText, 0, hoursText.length(), minutesTextBounds);
+            minutesX = bounds.width() / 2f - textBounds.width() / 2f - textBounds.left;
+            minutesY = bounds.height() / 2f + textBounds.height() / 2f - textBounds.bottom;
+            canvas.drawText(text, minutesX, minutesY, mMinutesTextPaint);
         }
 
         /**
