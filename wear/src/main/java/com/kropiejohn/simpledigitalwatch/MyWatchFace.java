@@ -25,31 +25,22 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
-import android.text.TextPaint;
 import android.util.Log;
-import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.google.android.gms.wearable.WearableListenerService;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
-import java.util.Map;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -90,7 +81,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
         boolean mRegisteredTimeZoneReceiver = false;
 
         Paint mBackgroundPaint;
-        Paint mTextPaint;
+        Paint mMinutesTextPaint;
+        Paint mSecondsTextPaint;
+        Paint mHoursTextPaint;
 
         boolean mAmbient;
         Calendar mCalendar;
@@ -118,8 +111,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             mBackgroundPaint = new Paint();
 
-            mTextPaint = new Paint();
-            mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
+            mMinutesTextPaint = new Paint();
+            mMinutesTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
+
+            mHoursTextPaint = new Paint();
+            mHoursTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
+
+            mSecondsTextPaint = new Paint();
+            mSecondsTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
 
             mCalendar = Calendar.getInstance();
 
@@ -132,14 +131,18 @@ public class MyWatchFace extends CanvasWatchFaceService {
             String timeTypefaceFile = sharedPreferences.getString(getString(R.string.time_typeface_key), null);
             if (timeTypefaceFile != null) {
                 Typeface timeTypeface = Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), timeTypefaceFile));
-                mTextPaint.setTypeface(timeTypeface);
+                mMinutesTextPaint.setTypeface(timeTypeface);
+                mHoursTextPaint.setTypeface(timeTypeface);
+                mSecondsTextPaint.setTypeface(timeTypeface);
             }
 
             int backgroundColor = sharedPreferences.getInt(getString(R.string.background_color_key), Color.BLACK);
             mBackgroundPaint.setColor(backgroundColor);
 
             int foregroundColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
-            mTextPaint.setColor(foregroundColor);
+            mMinutesTextPaint.setColor(foregroundColor);
+            mHoursTextPaint.setColor(foregroundColor);
+            mSecondsTextPaint.setColor(foregroundColor);
 
             sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         }
@@ -152,13 +155,15 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 mBackgroundPaint.setColor(backgroundColor);
             } else if (key.equals(getString(R.string.foreground_color_key))) {
                 int foregroundColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
-                mTextPaint.setColor(foregroundColor);
+                mMinutesTextPaint.setColor(foregroundColor);
             } else if (key.equals(getString(R.string.time_typeface_key))) {
                 String typefaceFile = sharedPreferences.getString(getString(R.string.time_typeface_key), null);
                 if (typefaceFile != null) {
                     try {
                         Typeface typeFace = Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), typefaceFile));
-                        mTextPaint.setTypeface(typeFace);
+                        mMinutesTextPaint.setTypeface(typeFace);
+                        mHoursTextPaint.setTypeface(typeFace);
+                        mSecondsTextPaint.setTypeface(typeFace);
                     } catch (Exception e) {
                         Log.e(TAG, String.format("onSharedPreferenceChanged: ERROR %s", e.toString()));
                     }
@@ -230,7 +235,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
             float textSize = resources.getDimension(isRound
                     ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
 
-            mTextPaint.setTextSize(textSize);
+            mMinutesTextPaint.setTextSize(textSize);
+            mHoursTextPaint.setTextSize(textSize);
+            mSecondsTextPaint.setTextSize(textSize);
         }
 
         @Override
@@ -251,7 +258,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient) {
-                    mTextPaint.setAntiAlias(!inAmbientMode);
+                    mMinutesTextPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
             }
@@ -286,36 +293,91 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
+            drawBackground(canvas, mBackgroundPaint, bounds);
+            drawTimeText(canvas, bounds);
+        }
+
+        private void drawBackground(Canvas canvas, Paint paint, Rect bounds) {
             // Draw the background.
             if (isInAmbientMode()) {
                 canvas.drawColor(Color.BLACK);
             } else {
-                canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
+                canvas.drawRect(0, 0, bounds.width(), bounds.height(), paint);
             }
+        }
 
+        private String getTimeText() {
             // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             long now = System.currentTimeMillis();
             mCalendar.setTimeInMillis(now);
 
-            String text = mAmbient
-                    ? String.format("%d:%02d", mCalendar.get(Calendar.HOUR),
-                    mCalendar.get(Calendar.MINUTE))
-                    : String.format("%d:%02d:%02d", mCalendar.get(Calendar.HOUR),
+            // If the time is midnight and the time is "0" change the hour value to "12"
+            int hour = mCalendar.get(Calendar.HOUR);
+            hour = (hour == 0) ? hour + 12 : hour;
+            return String.format(Locale.US, "%d:%02d:%02d", hour,
                     mCalendar.get(Calendar.MINUTE), mCalendar.get(Calendar.SECOND));
-
-            drawTimeText(canvas, mTextPaint, text);
         }
 
-        private void drawTimeText(Canvas canvas, Paint paint, String text) {
-            Rect rect = new Rect();
-            canvas.getClipBounds(rect);
-            int canvasHeight = rect.height();
-            int canvasWidth = rect.width();
-            paint.setTextAlign(Paint.Align.LEFT);
-            paint.getTextBounds(text, 0, text.length(), rect);
-            float x = canvasWidth / 2f - rect.width() / 2f - rect.left;
-            float y = canvasHeight / 2f + rect.height() / 2f - rect.bottom;
-            canvas.drawText(text, x, y, paint);
+        private void drawTimeText(Canvas canvas, Rect bounds) {
+            String text = getTimeText();
+            String separatorText = ":";
+            String spacingText = "0";
+
+            Rect minutesTextBounds = new Rect();
+            Rect hoursTextBounds = new Rect();
+            Rect secondsTextBounds = new Rect();
+            Rect separatorTextBounds = new Rect();
+            Rect spacingTextBounds = new Rect();
+
+            float hoursX;
+            float hoursY;
+            float minutesX;
+            float minutesY;
+            float secondsX;
+            float secondsY;
+            float separatorX;
+            float separatorY;
+            float spacing;
+
+            String[] timeTextParts = text.split(separatorText);
+            String hoursText = timeTextParts[0];
+            String minutesText = timeTextParts[1];
+            String secondText = timeTextParts[2];
+
+            // Use the same text for all times to ensure that the watch face does not move as the
+            // time changes
+            mMinutesTextPaint.setTextAlign(Paint.Align.LEFT);
+            mHoursTextPaint.setTextAlign(Paint.Align.LEFT);
+            mSecondsTextPaint.setTextAlign(Paint.Align.LEFT);
+
+            mMinutesTextPaint.getTextBounds(minutesText, 0, minutesText.length(), minutesTextBounds);
+            mHoursTextPaint.getTextBounds(hoursText, 0, hoursText.length(), hoursTextBounds);
+            mSecondsTextPaint.getTextBounds(secondText, 0, secondText.length(), secondsTextBounds);
+            mMinutesTextPaint.getTextBounds(spacingText, 0, spacingText.length(), spacingTextBounds);
+
+            spacing = spacingTextBounds.width();
+
+            minutesX = bounds.width() / 2f - minutesTextBounds.right;
+            minutesY = bounds.height() / 2f + minutesTextBounds.height() / 2f - minutesTextBounds.bottom;
+            canvas.drawText(minutesText, minutesX, minutesY, mMinutesTextPaint);
+
+            separatorX = minutesX - spacing;
+            separatorY = minutesY;
+            canvas.drawText(separatorText, separatorX, separatorY, mMinutesTextPaint);
+
+            hoursX = minutesX - hoursTextBounds.right - spacing;
+            hoursY = minutesY;
+            canvas.drawText(hoursText, hoursX, hoursY, mHoursTextPaint);
+
+            secondsX = minutesX + secondsTextBounds.height() + spacing;
+            secondsY = minutesY;
+            canvas.drawText(secondText, secondsX, secondsY, mSecondsTextPaint);
+
+            separatorX = secondsX - spacing;
+            separatorY = secondsY;
+            canvas.drawText(separatorText, separatorX, separatorY, mSecondsTextPaint);
+
+            mMinutesTextPaint.getTextBounds(hoursText, 0, hoursText.length(), minutesTextBounds);
         }
 
         /**
