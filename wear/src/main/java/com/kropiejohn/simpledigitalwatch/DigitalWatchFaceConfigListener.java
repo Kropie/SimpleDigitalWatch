@@ -1,6 +1,5 @@
 package com.kropiejohn.simpledigitalwatch;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,11 +9,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
-import com.google.android.gms.wearable.WearableListenerService;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.concurrent.TimeUnit;
 
 /**

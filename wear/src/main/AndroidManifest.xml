@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault" >
         <service
-            android:name=".MyWatchFace"
+            android:name=".mobile.MyWatchFace"
             android:label="@string/my_digital_name"
             android:permission="android.permission.BIND_WALLPAPER" >
             <meta-data
@@ -38,7 +38,7 @@
             </intent-filter>
         </service>
 
-        <service android:name=".DigitalWatchFaceConfigListener">
+        <service android:name=".mobile.DigitalWatchFaceConfigListener">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED"/>
                 <data

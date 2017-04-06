@@ -1,9 +1,7 @@
-package com.kropiejohn.simpledigitalwatch;
+package com.kropiejohn.simpledigitalwatch.mobile;
 
 import android.app.Activity;
-import android.app.DialogFragment;
 import android.content.ComponentName;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -14,9 +12,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -26,11 +22,14 @@ import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
+import com.kropiejohn.simpledigitalwatch.R;
 import com.kropiejohn.simpledigitalwatchface.FontView;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
-public class DigitalWatchFaceConfigActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<DataApi.DataItemResult> {
+public class DigitalWatchFaceConfigActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<DataApi.DataItemResult>, PropertyChangeListener {
 
     private GoogleApiClient mGoogleApiClient;
     private String mPeerId;
@@ -86,6 +85,15 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
     }
 
     @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(getString(R.string.background_color_key)) ||
+                evt.getPropertyName().equals(getString(R.string.background_color_key))) {
+            Integer value = (Integer) evt.getNewValue();
+            sendConfigUpdateMessage(evt.getPropertyName(), value);
+        }
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
@@ -96,6 +104,7 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+        DigitalWatchColorConfig.getInstance().removePropertyChangeListener(this);
         super.onStop();
     }
 
@@ -142,10 +151,13 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         selectColorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DialogFragment colorPickerFragment = new ColorPickerDialogFragment();
+                ColorPickerDialogFragment colorPickerFragment = new ColorPickerDialogFragment();
                 colorPickerFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
+                colorPickerFragment.setKeyToUpdate(getString(R.string.background_color_key));
             }
         });
+
+        DigitalWatchColorConfig.getInstance().addPropertyChangeListener(this);
     }
 
     private void sendConfigUpdateMessage(String configKey, int color) {

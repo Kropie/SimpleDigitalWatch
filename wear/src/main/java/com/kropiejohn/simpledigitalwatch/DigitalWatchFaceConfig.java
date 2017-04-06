@@ -3,14 +3,9 @@ package com.kropiejohn.simpledigitalwatch;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.google.android.gms.wearable.DataMap;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 
 /**
  * Created by jonat on 3/30/2017.
