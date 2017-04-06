@@ -22,32 +22,12 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/iv_black_background"
+        <Button
+            android:id="@+id/selectColorButton"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_margin="10dp"
-            android:adjustViewBounds="false"
-            android:hapticFeedbackEnabled="true"
-            android:visibility="visible"
-            app:srcCompat="@color/black_background" />
+            android:layout_height="wrap_content"
+            android:text="Select Color" />
 
-        <ImageView
-            android:id="@+id/iv_red_background"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_margin="10dp"
-            android:hapticFeedbackEnabled="true"
-            android:visibility="visible"
-            app:srcCompat="@color/red_background" />
 
-        <ImageView
-            android:id="@+id/iv_blue_background"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_margin="10dp"
-            android:hapticFeedbackEnabled="true"
-            android:visibility="visible"
-            app:srcCompat="@color/blue_background" />
     </LinearLayout>
 </ScrollView>

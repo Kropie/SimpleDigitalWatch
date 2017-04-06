@@ -1,6 +1,7 @@
 package com.kropiejohn.simpledigitalwatch;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -12,6 +13,7 @@ import android.support.wearable.companion.WatchFaceCompanion;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -34,9 +36,6 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
     private String mPeerId;
     private String TAG = "ConfigActivity";
     private static final String PATH_WITH_FEATURE = "/watch_face_config/Digital";
-    private ImageView redImageView;
-    private ImageView blueImageView;
-    private ImageView blackImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +51,6 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
 
         ComponentName name = getIntent().getParcelableExtra(
                 WatchFaceCompanion.EXTRA_WATCH_FACE_COMPONENT);
-
-        redImageView = (ImageView) findViewById(R.id.iv_red_background);
-        blackImageView = (ImageView) findViewById(R.id.iv_black_background);
-        blueImageView = (ImageView) findViewById(R.id.iv_blue_background);
-
-        redImageView.setBackgroundColor(Color.RED);
-        blackImageView.setBackgroundColor(Color.BLACK);
-        blueImageView.setBackgroundColor(Color.BLUE);
 
         setupListeners();
 
@@ -147,28 +138,12 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
     }
 
     private void setupListeners() {
-        final ImageView blueBackroundImageView = (ImageView) findViewById(R.id.iv_blue_background);
-        final ImageView blackBackroundImageView = (ImageView) findViewById(R.id.iv_black_background);
-        final ImageView redBackgroundImageView = (ImageView) findViewById(R.id.iv_red_background);
-
-        blueBackroundImageView.setOnClickListener(new View.OnClickListener() {
+        Button selectColorButton = (Button) findViewById(R.id.selectColorButton);
+        selectColorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendConfigUpdateMessage(getString(R.string.background_color_key), Color.BLUE);
-            }
-        });
-
-        blackBackroundImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendConfigUpdateMessage(getString(R.string.background_color_key), Color.BLACK);
-            }
-        });
-
-        redBackgroundImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendConfigUpdateMessage(getString(R.string.background_color_key), Color.RED);
+                DialogFragment colorPickerFragment = new ColorPickerDialogFragment();
+                colorPickerFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
             }
         });
     }

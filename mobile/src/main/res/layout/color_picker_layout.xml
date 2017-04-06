@@ -2,33 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/color_picker_background">
 
-    <EditText
-        android:id="@+id/editText2"
-        android:layout_width="match_parent"
+    <com.larswerkman.holocolorpicker.ColorPicker
+        android:id="@+id/color_picker"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:singleLine="false"
-        android:text="Select a color"
-        android:textAlignment="center" />
-
-    <ImageView
-        android:id="@+id/iv_black_background"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        app:srcCompat="@color/black_background" />
-
-    <ImageView
-        android:id="@+id/iv_red_background"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        app:srcCompat="@color/red_background" />
-
-    <ImageView
-        android:id="@+id/iv_blue_background"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        app:srcCompat="@color/blue_background" />
+        android:layout_gravity="center"/>
+    <com.larswerkman.holocolorpicker.SaturationBar
+        android:id="@+id/color_picker_saturation_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
+    <com.larswerkman.holocolorpicker.ValueBar
+        android:id="@+id/color_picker_value_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
 </LinearLayout>

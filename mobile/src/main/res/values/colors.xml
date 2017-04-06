@@ -6,4 +6,6 @@
     <color name="red_background">#ff0000</color>
     <color name="black_background">#000000</color>
     <color name="blue_background">#00F</color>
+    <color name="color_picker_background">#232e33</color>
+
 </resources>

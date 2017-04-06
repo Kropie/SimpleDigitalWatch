@@ -6,4 +6,6 @@
     <string name="iv_black_background_id">iv_black_background</string>
     <string name="iv_red_background_id">iv_red_background</string>
     <string name="iv_blue_background_id">iv_blue_background</string>
+    <string name="color_picker_ok">Select Color</string>
+    <string name="color_picker_cancel">Cancel</string>
 </resources>
