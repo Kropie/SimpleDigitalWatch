@@ -3,5 +3,6 @@
     <string name="background_color_key" translatable="false">background_color</string>
     <string name="foreground_color_key" translatable="false">foreground_color</string>
     <string name="time_typeface_key" translatable="false">time_typeface</string>
+    <string name="show_seconds_key" translatable="false">show_seconds</string>
     <string name="fonts_path">fonts</string>
 </resources>

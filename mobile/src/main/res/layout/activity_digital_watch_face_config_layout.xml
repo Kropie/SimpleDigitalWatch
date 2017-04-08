@@ -4,7 +4,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/ll_digital_watch_Config"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,11 +22,16 @@
             android:textStyle="bold" />
 
         <Button
-            android:id="@+id/selectColorButton"
+            android:id="@+id/selectBackgroundColorButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Select Color" />
+            android:text="Select background color" />
 
+        <Button
+            android:id="@+id/selectTimeFontButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select time font"/>
 
     </LinearLayout>
 </ScrollView>

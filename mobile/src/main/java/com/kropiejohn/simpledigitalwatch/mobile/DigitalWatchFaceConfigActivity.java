@@ -1,9 +1,14 @@
 package com.kropiejohn.simpledigitalwatch.mobile;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.ComponentName;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
@@ -25,11 +30,10 @@ import com.google.android.gms.wearable.Wearable;
 import com.kropiejohn.simpledigitalwatch.R;
 import com.kropiejohn.simpledigitalwatchface.FontView;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
-public class DigitalWatchFaceConfigActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<DataApi.DataItemResult>, PropertyChangeListener {
+// TODO clean up class to remove clutter that was created by basing this class on the example project.
+public class DigitalWatchFaceConfigActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<DataApi.DataItemResult>, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private GoogleApiClient mGoogleApiClient;
     private String mPeerId;
@@ -39,7 +43,7 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_digital_watch_face_config);
+        setContentView(R.layout.activity_digital_watch_face_config_layout);
 
         mPeerId = getIntent().getStringExtra(WatchFaceCompanion.EXTRA_PEER_ID);
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -51,61 +55,41 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         ComponentName name = getIntent().getParcelableExtra(
                 WatchFaceCompanion.EXTRA_WATCH_FACE_COMPONENT);
 
-        setupListeners();
-
-        try {
-            String fontsPath = getString(R.string.fonts_path);
-            String[] typeFaces = this.getAssets().list(fontsPath);
-            for (String strTypeface :
-                    typeFaces) {
-                final FontView fontView = new FontView(this);
-                fontView.setText(strTypeface);
-                try {
-                    Typeface typeface = Typeface.createFromAsset(this.getAssets(), fontsPath + "/" + strTypeface);
-                    fontView.setTypeface(typeface);
-                    fontView.setFont(strTypeface);
-                    // TODO add the text size to a resources file and use it here instead of this hardcoded value.
-                    fontView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
-                    fontView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                    fontView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            sendConfigUpdateMessage(getString(R.string.time_typeface_key), fontView.getFont());
-                        }
-                    });
-                } catch (Exception e) {
-                    Log.e(TAG, e.toString());
-                }
-                LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ll_digital_watch_Config);
-                linearLayout.addView(fontView);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        initializeViews();
+        setupSharedPreferences();
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(getString(R.string.background_color_key)) ||
-                evt.getPropertyName().equals(getString(R.string.background_color_key))) {
-            Integer value = (Integer) evt.getNewValue();
-            sendConfigUpdateMessage(evt.getPropertyName(), value);
-        }
+    private void initializeViews() {
+        Button selectColorButton = (Button) findViewById(R.id.selectBackgroundColorButton);
+        selectColorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ColorPickerDialogFragment colorPickerFragment = new ColorPickerDialogFragment();
+                colorPickerFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
+                colorPickerFragment.setKeyToUpdate(getString(R.string.background_color_key));
+            }
+        });
+
+        Button selectFontButton = (Button)  findViewById(R.id.selectTimeFontButton);
+
+        selectFontButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment fontFragment = new FontPickerDialogFragment();
+                fontFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
+            }
+        });
+    }
+
+    private void setupSharedPreferences() {
+        SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
-        DigitalWatchColorConfig.getInstance().removePropertyChangeListener(this);
-        super.onStop();
     }
 
     @Override
@@ -118,6 +102,20 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
             Uri.Builder builder = new Uri.Builder();
             Uri uri = builder.scheme("wear").path(PATH_WITH_FEATURE).authority(mPeerId).build();
             Wearable.DataApi.getDataItem(mGoogleApiClient, uri).setResultCallback(this);
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key == null || sharedPreferences == null)
+            return;
+
+        if(key.equals(getString(R.string.background_color_key))) {
+            sendConfigUpdateMessage(key, sharedPreferences.getInt(key, Color.BLACK));
+        } else if (key.equals(getString(R.string.foreground_color_key))) {
+            sendConfigUpdateMessage(key, sharedPreferences.getInt(key, Color.WHITE));
+        } else if (key.equals(getString(R.string.time_typeface_key))) {
+            sendConfigUpdateMessage(key, sharedPreferences.getString(key, null));
         }
     }
 
@@ -144,20 +142,6 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "onConnectionFailed: " + connectionResult);
         }
-    }
-
-    private void setupListeners() {
-        Button selectColorButton = (Button) findViewById(R.id.selectColorButton);
-        selectColorButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ColorPickerDialogFragment colorPickerFragment = new ColorPickerDialogFragment();
-                colorPickerFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
-                colorPickerFragment.setKeyToUpdate(getString(R.string.background_color_key));
-            }
-        });
-
-        DigitalWatchColorConfig.getInstance().addPropertyChangeListener(this);
     }
 
     private void sendConfigUpdateMessage(String configKey, int color) {
@@ -188,5 +172,19 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         }
     }
 
+    @Override
+    protected void onStop() {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+        super.onStop();
+    }
 
+    @Override
+    protected void onDestroy() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+
+        super.onDestroy();
+    }
 }

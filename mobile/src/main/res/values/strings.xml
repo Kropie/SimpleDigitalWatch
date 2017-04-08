@@ -6,6 +6,10 @@
     <string name="iv_black_background_id">iv_black_background</string>
     <string name="iv_red_background_id">iv_red_background</string>
     <string name="iv_blue_background_id">iv_blue_background</string>
-    <string name="color_picker_ok">Select Color</string>
-    <string name="color_picker_cancel">Cancel</string>
+    
+    <string name="color_picker_positive_button_text">Select Color</string>
+    <string name="color_picker_negative_button_text">Cancel</string>
+    
+    <string name="font_picker_negative_button_text">Cancel</string>
+    <string name="font_picker_text_view_text">Select a font</string>
 </resources>

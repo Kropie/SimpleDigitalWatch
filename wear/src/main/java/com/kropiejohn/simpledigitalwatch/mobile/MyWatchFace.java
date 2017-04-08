@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.kropiejohn.simpledigitalwatch;
+package com.kropiejohn.simpledigitalwatch.mobile;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -36,6 +36,8 @@ import android.support.wearable.watchface.WatchFaceStyle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
+
+import com.kropiejohn.simpledigitalwatch.R;
 
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
@@ -81,16 +83,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         Paint mBackgroundPaint;
         Paint mMinutesTextPaint;
-        Paint mSecondsTextPaint;
-        Paint mHoursTextPaint;
 
         boolean mAmbient;
         Calendar mCalendar;
-
-        float mXOffset;
-        float mYOffset;
-        float timeX;
-        float timeY;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -108,18 +103,11 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     .setAcceptsTapEvents(true)
                     .build());
             Resources resources = MyWatchFace.this.getResources();
-            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
             mBackgroundPaint = new Paint();
 
             mMinutesTextPaint = new Paint();
             mMinutesTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
-
-            mHoursTextPaint = new Paint();
-            mHoursTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
-
-            mSecondsTextPaint = new Paint();
-            mSecondsTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
 
             mCalendar = Calendar.getInstance();
 
@@ -131,10 +119,15 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             String timeTypefaceFile = sharedPreferences.getString(getString(R.string.time_typeface_key), null);
             if (timeTypefaceFile != null) {
-                Typeface timeTypeface = Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), timeTypefaceFile));
+                Typeface timeTypeface = Typeface.DEFAULT;
+
+                try {
+                    Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), timeTypefaceFile));
+                } catch (Exception e) {
+                    Log.e(TAG, String.format(Locale.US,"setupSharedPreferences: Unable to find font asset %s", timeTypefaceFile));
+                }
+
                 mMinutesTextPaint.setTypeface(timeTypeface);
-                mHoursTextPaint.setTypeface(timeTypeface);
-                mSecondsTextPaint.setTypeface(timeTypeface);
             }
 
             int backgroundColor = sharedPreferences.getInt(getString(R.string.background_color_key), Color.BLACK);
@@ -142,8 +135,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             int foregroundColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
             mMinutesTextPaint.setColor(foregroundColor);
-            mHoursTextPaint.setColor(foregroundColor);
-            mSecondsTextPaint.setColor(foregroundColor);
 
             sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         }
@@ -165,8 +156,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     try {
                         Typeface typeFace = Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), typefaceFile));
                         mMinutesTextPaint.setTypeface(typeFace);
-                        mHoursTextPaint.setTypeface(typeFace);
-                        mSecondsTextPaint.setTypeface(typeFace);
                         invalidate();
                     } catch (Exception e) {
                         Log.e(TAG, String.format("onSharedPreferenceChanged: ERROR %s", e.toString()));
@@ -234,14 +223,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
             // Load resources that have alternate values for round watches.
             Resources resources = MyWatchFace.this.getResources();
             boolean isRound = insets.isRound();
-            mXOffset = resources.getDimension(isRound
-                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
             float textSize = resources.getDimension(isRound
                     ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
 
             mMinutesTextPaint.setTextSize(textSize);
-            mHoursTextPaint.setTextSize(textSize);
-            mSecondsTextPaint.setTextSize(textSize);
         }
 
         @Override
@@ -295,7 +280,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             // If the time is midnight and the time is "0" change the hour value to "12"
             int hour = mCalendar.get(Calendar.HOUR);
             hour = (hour == 0) ? hour + 12 : hour;
-            String time = String.format(Locale.US, "%02d:%02d", hour, mCalendar.get(Calendar.MINUTE));
+            String time = String.format(Locale.US, "%2d:%02d", hour, mCalendar.get(Calendar.MINUTE));
 
             // If not ambient return time without seconds.
             if (mAmbient) {
