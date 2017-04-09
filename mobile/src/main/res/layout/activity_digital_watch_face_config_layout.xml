@@ -28,6 +28,12 @@
             android:text="Select background color" />
 
         <Button
+            android:id="@+id/selectForegroundColorButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Foreground color" />
+
+        <Button
             android:id="@+id/selectTimeFontButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

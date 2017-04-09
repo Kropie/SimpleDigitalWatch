@@ -74,15 +74,28 @@ public class ColorPickerDialogFragment extends DialogFragment {
 
     private ColorPicker initializeColorPicker(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-        Integer defaultColor = Color.BLACK;
-        if(keyToUpdate != null && keyToUpdate.equals(getActivity().getString(R.string.foreground_color_key))) {
-            defaultColor = Color.WHITE;
-        }
-        Integer currentColor = sharedPreferences.getInt(keyToUpdate, defaultColor);
 
         ColorPicker picker = (ColorPicker) view.findViewById(R.id.color_picker);
         SaturationBar saturationBar = (SaturationBar) view.findViewById(R.id.color_picker_saturation_bar);
         ValueBar valueBar = (ValueBar) view.findViewById(R.id.color_picker_value_bar);
+
+        Integer defaultBackgroundColor = Color.BLACK;
+        Integer defaultForegroundColor = Color.WHITE;
+        Integer currentColor;
+
+        if(keyToUpdate == null) {
+            currentColor = picker.getColor();
+        } else if (!sharedPreferences.contains(keyToUpdate)) {
+            if (keyToUpdate.equals(getString(R.string.foreground_color_key))) {
+                currentColor = defaultForegroundColor;
+            } else if (keyToUpdate.equals(getString(R.string.background_color_key))) {
+                currentColor = defaultBackgroundColor;
+            } else {
+                currentColor = picker.getColor();
+            }
+        } else {
+            currentColor = sharedPreferences.getInt(keyToUpdate, defaultBackgroundColor);
+        }
 
         picker.addSaturationBar(saturationBar);
         picker.addValueBar(valueBar);

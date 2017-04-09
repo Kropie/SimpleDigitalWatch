@@ -83,6 +83,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         Paint mBackgroundPaint;
         Paint mMinutesTextPaint;
+        Integer mTimeTextColor;
 
         boolean mAmbient;
         Calendar mCalendar;
@@ -124,7 +125,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 try {
                     Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), timeTypefaceFile));
                 } catch (Exception e) {
-                    Log.e(TAG, String.format(Locale.US,"setupSharedPreferences: Unable to find font asset %s", timeTypefaceFile));
+                    Log.e(TAG, String.format(Locale.US, "setupSharedPreferences: Unable to find font asset %s", timeTypefaceFile));
                 }
 
                 mMinutesTextPaint.setTypeface(timeTypeface);
@@ -133,8 +134,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
             int backgroundColor = sharedPreferences.getInt(getString(R.string.background_color_key), Color.BLACK);
             mBackgroundPaint.setColor(backgroundColor);
 
-            int foregroundColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
-            mMinutesTextPaint.setColor(foregroundColor);
+            mTimeTextColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
+            mMinutesTextPaint.setColor(mTimeTextColor);
 
             sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         }
@@ -249,6 +250,13 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 if (mLowBitAmbient) {
                     mMinutesTextPaint.setAntiAlias(!inAmbientMode);
                 }
+
+                if (mAmbient) {
+                    mMinutesTextPaint.setColor(Color.WHITE);
+                } else {
+                    mMinutesTextPaint.setColor(mTimeTextColor);
+                }
+
                 invalidate();
             }
 

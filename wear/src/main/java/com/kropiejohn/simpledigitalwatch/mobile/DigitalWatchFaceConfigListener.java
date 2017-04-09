@@ -71,7 +71,7 @@ public class DigitalWatchFaceConfigListener extends WatchFaceConfigListener {
 
         if (dataMap.containsKey(foregroundKey)) {
             foregroundColor = dataMap.getInt(foregroundKey);
-            editor.putInt(backgroundKey, foregroundColor);
+            editor.putInt(foregroundKey, foregroundColor);
         }
 
         if (dataMap.containsKey(timeTypeFaceKey)) {

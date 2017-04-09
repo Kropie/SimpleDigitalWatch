@@ -60,13 +60,24 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
     }
 
     private void initializeViews() {
-        Button selectColorButton = (Button) findViewById(R.id.selectBackgroundColorButton);
-        selectColorButton.setOnClickListener(new View.OnClickListener() {
+        Button selectBackgroundColorButton = (Button) findViewById(R.id.selectBackgroundColorButton);
+
+        selectBackgroundColorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ColorPickerDialogFragment colorPickerFragment = new ColorPickerDialogFragment();
-                colorPickerFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
                 colorPickerFragment.setKeyToUpdate(getString(R.string.background_color_key));
+                colorPickerFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
+            }
+        });
+
+        Button selectForegroundColorButton = (Button) findViewById(R.id.selectForegroundColorButton);
+        selectForegroundColorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ColorPickerDialogFragment colorPickerFragment = new ColorPickerDialogFragment();
+                colorPickerFragment.setKeyToUpdate(getString(R.string.foreground_color_key));
+                colorPickerFragment.show(DigitalWatchFaceConfigActivity.this.getFragmentManager(), "");
             }
         });
 
