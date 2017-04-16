@@ -341,7 +341,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             if (mShowDate) {
                 float originalTextSize = mMinutesTextPaint.getTextSize();
-                float textSize = originalTextSize / 3;
+                float textSize = originalTextSize / 2f;
                 mMinutesTextPaint.setTextSize(textSize);
 
                 String dateText = getDateText();
