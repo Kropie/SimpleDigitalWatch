@@ -17,6 +17,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -55,11 +56,10 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         ComponentName name = getIntent().getParcelableExtra(
                 WatchFaceCompanion.EXTRA_WATCH_FACE_COMPONENT);
 
-        initializeViews();
-        setupSharedPreferences();
+        initializeViews(setupSharedPreferences());
     }
 
-    private void initializeViews() {
+    private void initializeViews(final SharedPreferences sharedPreferences) {
         Button selectBackgroundColorButton = (Button) findViewById(R.id.selectBackgroundColorButton);
 
         selectBackgroundColorButton.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +81,31 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
             }
         });
 
-        Button selectFontButton = (Button)  findViewById(R.id.selectTimeFontButton);
+        Button selectFontButton = (Button) findViewById(R.id.selectTimeFontButton);
+
+        final CheckBox showSeconds = (CheckBox) findViewById(R.id.showSecondsCheckbox);
+        showSeconds.setChecked(sharedPreferences.getBoolean(getString(R.string.show_seconds_key), false));
+        showSeconds.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendConfigUpdateMessage(getString(R.string.show_seconds_key), showSeconds.isChecked());
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean(getString(R.string.show_seconds_key), showSeconds.isChecked());
+                editor.apply();
+            }
+        });
+
+        final CheckBox showDate = (CheckBox) findViewById(R.id.showDate);
+        showDate.setChecked(sharedPreferences.getBoolean(getString(R.string.show_date_key), false));
+        showDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendConfigUpdateMessage(getString(R.string.show_date_key), showDate.isChecked());
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean(getString(R.string.show_date_key), showDate.isChecked());
+                editor.apply();
+            }
+        });
 
         selectFontButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,9 +116,10 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         });
     }
 
-    private void setupSharedPreferences() {
-        SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    private SharedPreferences setupSharedPreferences() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        return sharedPreferences;
     }
 
     @Override
@@ -121,7 +146,7 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         if (key == null || sharedPreferences == null)
             return;
 
-        if(key.equals(getString(R.string.background_color_key))) {
+        if (key.equals(getString(R.string.background_color_key))) {
             sendConfigUpdateMessage(key, sharedPreferences.getInt(key, Color.BLACK));
         } else if (key.equals(getString(R.string.foreground_color_key))) {
             sendConfigUpdateMessage(key, sharedPreferences.getInt(key, Color.WHITE));
@@ -173,6 +198,20 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
         if (mPeerId != null) {
             DataMap config = new DataMap();
             config.putString(configKey, update);
+            byte[] rawData = config.toByteArray();
+            Wearable.MessageApi.sendMessage(mGoogleApiClient, mPeerId, PATH_WITH_FEATURE, rawData);
+
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "Sent watch face config message: " + configKey + " -> "
+                        + update);
+            }
+        }
+    }
+
+    private void sendConfigUpdateMessage(String configKey, boolean update) {
+        if (mPeerId != null) {
+            DataMap config = new DataMap();
+            config.putBoolean(configKey, update);
             byte[] rawData = config.toByteArray();
             Wearable.MessageApi.sendMessage(mGoogleApiClient, mPeerId, PATH_WITH_FEATURE, rawData);
 

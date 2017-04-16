@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/ll_digital_watch_Config"
@@ -9,35 +9,53 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/editText2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:singleLine="false"
-            android:text="Select a color"
-            android:textAlignment="center"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
+        <!--TODO Define the text in a resources file-->
+        <!--TODO Define the margins in a resources file-->
         <Button
             android:id="@+id/selectBackgroundColorButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select background color" />
+            android:text="Select background color"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="15dp"/>
 
+        <!--TODO Define the text in a resources file-->
+        <!--TODO Define the margins in a resources file-->
         <Button
             android:id="@+id/selectForegroundColorButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select Foreground color" />
+            android:text="Select Foreground color"
+            android:layout_marginLeft="15dp"/>
 
+        <!--TODO Define the text in a resources file-->
+        <!--TODO Define the margins in a resources file-->
         <Button
             android:id="@+id/selectTimeFontButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select time font"
+            android:layout_marginLeft="15dp"/>
+
+        <!--TODO define the text in a resources file-->
+        <!--TODO Define the margins in a resources file-->
+        <!--TODO add implementation to show/hide seconds-->
+        <CheckBox
+            android:id="@+id/showSecondsCheckbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Select time font"/>
+            android:text="Show seconds"
+            android:layout_marginLeft="15dp"/>
+
+        <!--TODO define the text in a resources file-->
+        <!--TODO Define the margins in a resources file-->
+        <!--TODO add implementation to show/hide the date-->
+        <CheckBox
+            android:id="@+id/showDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show date"
+            android:layout_marginLeft="15dp"/>
 
     </LinearLayout>
 </ScrollView>

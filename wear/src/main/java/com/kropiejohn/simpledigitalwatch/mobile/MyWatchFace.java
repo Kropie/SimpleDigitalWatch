@@ -40,6 +40,7 @@ import android.view.WindowInsets;
 import com.kropiejohn.simpledigitalwatch.R;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -93,6 +94,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
          * disable anti-aliasing in ambient mode.
          */
         boolean mLowBitAmbient;
+        boolean mShowSeconds;
+        boolean mShowDate;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -123,7 +126,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 Typeface timeTypeface = Typeface.DEFAULT;
 
                 try {
-                    Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), timeTypefaceFile));
+                    timeTypeface = Typeface.createFromAsset(getAssets(), String.format("%s/%s", getString(R.string.fonts_path), timeTypefaceFile));
                 } catch (Exception e) {
                     Log.e(TAG, String.format(Locale.US, "setupSharedPreferences: Unable to find font asset %s", timeTypefaceFile));
                 }
@@ -131,16 +134,18 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 mMinutesTextPaint.setTypeface(timeTypeface);
             }
 
-            int backgroundColor = sharedPreferences.getInt(getString(R.string.background_color_key), Color.BLACK);
-            mBackgroundPaint.setColor(backgroundColor);
+            mBackgroundPaint.setColor(sharedPreferences.getInt(getString(R.string.background_color_key), Color.BLACK));
 
             mTimeTextColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
             mMinutesTextPaint.setColor(mTimeTextColor);
 
+            mShowSeconds = sharedPreferences.getBoolean(getString(R.string.show_seconds_key), false);
+            mShowDate = sharedPreferences.getBoolean(getString(R.string.show_date_key), false);
+
             sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         }
 
-        // TODO Recenter the paint objects whenever the font changes.
+
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             if (key.equals(getString(R.string.background_color_key))) {
@@ -148,8 +153,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 mBackgroundPaint.setColor(backgroundColor);
                 invalidate();
             } else if (key.equals(getString(R.string.foreground_color_key))) {
-                int foregroundColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
-                mMinutesTextPaint.setColor(foregroundColor);
+                mTimeTextColor = sharedPreferences.getInt(getString(R.string.foreground_color_key), Color.WHITE);
+                mMinutesTextPaint.setColor(mTimeTextColor);
                 invalidate();
             } else if (key.equals(getString(R.string.time_typeface_key))) {
                 String typefaceFile = sharedPreferences.getString(getString(R.string.time_typeface_key), null);
@@ -162,6 +167,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
                         Log.e(TAG, String.format("onSharedPreferenceChanged: ERROR %s", e.toString()));
                     }
                 }
+            } else if (key.equals(getString(R.string.show_date_key))) {
+                mShowDate = sharedPreferences.getBoolean(key, true);
+            } else if (key.equals(getString(R.string.show_seconds_key))) {
+                mShowSeconds = sharedPreferences.getBoolean(key, true);
             }
         }
 
@@ -268,7 +277,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             drawBackground(canvas, mBackgroundPaint, bounds);
-            drawTimeText(canvas, bounds);
+            drawTimeAndDateText(canvas, bounds);
         }
 
         private void drawBackground(Canvas canvas, Paint paint, Rect bounds) {
@@ -291,7 +300,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             String time = String.format(Locale.US, "%2d:%02d", hour, mCalendar.get(Calendar.MINUTE));
 
             // If not ambient return time without seconds.
-            if (mAmbient) {
+            if (mAmbient || !mShowSeconds) {
                 return time;
             }
 
@@ -299,9 +308,22 @@ public class MyWatchFace extends CanvasWatchFaceService {
             return String.format(Locale.US, "%s:%02d", time, mCalendar.get(Calendar.SECOND));
         }
 
-        private void drawTimeText(Canvas canvas, Rect bounds) {
+        private String getDateText() {
+            SimpleDateFormat monthDateFormat = new SimpleDateFormat("MMM");
+            String day = String.valueOf(mCalendar.get(Calendar.DAY_OF_MONTH));
+            String month = monthDateFormat.format(mCalendar.getTime());
+
+            return String.format(Locale.US, "%s %s", month, day);
+        }
+
+        private void drawTimeAndDateText(Canvas canvas, Rect bounds) {
             String text = getTimeText();
-            String defaultText = text.substring(0, text.length() - 3) + ":00";
+            String defaultText;
+
+            if(mShowSeconds)
+                defaultText = text.substring(0, text.length() - 3) + ":00";
+            else
+                defaultText = text;
 
             Rect textBounds = new Rect();
 
@@ -316,6 +338,22 @@ public class MyWatchFace extends CanvasWatchFaceService {
             minutesX = bounds.width() / 2f - textBounds.width() / 2f - textBounds.left;
             minutesY = bounds.height() / 2f + textBounds.height() / 2f - textBounds.bottom;
             canvas.drawText(text, minutesX, minutesY, mMinutesTextPaint);
+
+            if (mShowDate) {
+                float originalTextSize = mMinutesTextPaint.getTextSize();
+                float textSize = originalTextSize / 3;
+                mMinutesTextPaint.setTextSize(textSize);
+
+                String dateText = getDateText();
+                mMinutesTextPaint.getTextBounds(dateText, 0, dateText.length(), textBounds);
+
+                float dateX = bounds.width() / 2f - textBounds.width() / 2f - textBounds.left;
+                float dateY = minutesY + textBounds.height() * 5 / 4;
+
+                canvas.drawText(getDateText(), dateX, dateY, mMinutesTextPaint);
+                mMinutesTextPaint.setTextSize(originalTextSize);
+            }
+
         }
 
         /**

@@ -58,9 +58,11 @@ public class DigitalWatchFaceConfigListener extends WatchFaceConfigListener {
     public void updateConfig(DataMap dataMap) {
         Context cxt = this.getApplicationContext();
 
-        String backgroundKey = cxt.getString(R.string.background_color_key);
-        String foregroundKey = cxt.getString(R.string.foreground_color_key);
-        String timeTypeFaceKey = cxt.getString(R.string.time_typeface_key);
+        final String backgroundKey = cxt.getString(R.string.background_color_key);
+        final String foregroundKey = cxt.getString(R.string.foreground_color_key);
+        final String timeTypeFaceKey = cxt.getString(R.string.time_typeface_key);
+        final String showDateKey = getString(R.string.show_date_key);
+        final String showSecondsKey = getString(R.string.show_seconds_key);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(cxt);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -79,7 +81,15 @@ public class DigitalWatchFaceConfigListener extends WatchFaceConfigListener {
             editor.putString(timeTypeFaceKey, typeFaceAsset);
         }
 
-        editor.commit();
+        if(dataMap.containsKey(showDateKey)) {
+            editor.putBoolean(showDateKey, dataMap.getBoolean(showDateKey, true));
+        }
+
+        if(dataMap.containsKey(showSecondsKey)) {
+            editor.putBoolean(showSecondsKey, dataMap.getBoolean(showSecondsKey, true));
+        }
+
+        editor.apply();
     }
 
     @Override
