@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -83,7 +84,7 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
 
         Button selectFontButton = (Button) findViewById(R.id.selectTimeFontButton);
 
-        final CheckBox showSeconds = (CheckBox) findViewById(R.id.showSecondsCheckbox);
+        final Switch showSeconds = (Switch) findViewById(R.id.showSecondsCheckbox);
         showSeconds.setChecked(sharedPreferences.getBoolean(getString(R.string.show_seconds_key), false));
         showSeconds.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,7 +96,7 @@ public class DigitalWatchFaceConfigActivity extends Activity implements GoogleAp
             }
         });
 
-        final CheckBox showDate = (CheckBox) findViewById(R.id.showDate);
+        final Switch showDate = (Switch) findViewById(R.id.showDate);
         showDate.setChecked(sharedPreferences.getBoolean(getString(R.string.show_date_key), false));
         showDate.setOnClickListener(new View.OnClickListener() {
             @Override

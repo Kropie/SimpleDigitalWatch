@@ -1,9 +1,20 @@
 <resources>
+    <!-- General -->
     <string name="app_name">SimpleDigitalWatch</string>
+    <string name="fonts_path">fonts</string>
+
+    <!-- Key definitions -->
     <string name="background_color_key" translatable="false">background_color</string>
     <string name="foreground_color_key" translatable="false">foreground_color</string>
     <string name="time_typeface_key" translatable="false">time_typeface</string>
     <string name="show_seconds_key" translatable="false">show_seconds</string>
     <string name="show_date_key" translatable="false">show_date</string>
-    <string name="fonts_path">fonts</string>
+
+    <!-- Resources for configuration activity -->
+    <string name="button_select_background_text">Select background color</string>
+    <string name="button_select_foreground_text">Select text color</string>
+    <string name="button_select_font_text">Select time and date font</string>
+    <string name="switch_show_seconds_text">Show seconds</string>
+    <string name="switch_show_date_text">Show date</string>
+
 </resources>
