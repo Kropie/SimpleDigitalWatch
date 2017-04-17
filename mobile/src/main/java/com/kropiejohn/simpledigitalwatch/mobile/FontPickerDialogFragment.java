@@ -6,7 +6,6 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -19,7 +18,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.kropiejohn.simpledigitalwatch.R;
-import com.kropiejohn.simpledigitalwatchface.util.FileUtil;
 import com.kropiejohn.simpledigitalwatchface.FontView;
 import com.kropiejohn.simpledigitalwatchface.util.TypeFaceUtil;
 
@@ -36,14 +34,44 @@ import java.util.Locale;
  * Created by jonat on 4/7/2017.
  */
 public class FontPickerDialogFragment extends DialogFragment {
+    /**
+     * Tag for logging purposes.
+     */
     private static final String TAG = "FontDialog";
-    private Calendar mCalendar;
+
+    /**
+     * Holds all of the FontViews.
+     */
     private List<FontView> fontViewList;
+
+    /**
+     * Runnable that will update the text for the font views.
+     */
     private Runnable mUpdateViewRunnable;
+
+    /**
+     * Handler used to schedule the updates for the text for the font views.
+     */
     private Handler mUpdateViewHandler;
+
+    /**
+     * LinearLayout that the font views will be placed inside of.
+     */
     private LinearLayout mFontViewParentLayout;
+
+    /**
+     * Holds the inflated view for this dialog fragment.
+     */
     private View mInflatedView;
+
+    /**
+     * Holds the dialog for this fragment.
+     */
     private Dialog mDialog;
+
+    /**
+     * Holds the default shared preferences for the current application.
+     */
     private SharedPreferences mSharedPreferences;
 
     /**
@@ -52,13 +80,15 @@ public class FontPickerDialogFragment extends DialogFragment {
     public FontPickerDialogFragment() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        mCalendar = Calendar.getInstance();
-        fontViewList = new ArrayList<>();
 
+        createFontViews();
         builder.setView(getInflatedView());
         builder.setNegativeButton(getString(R.string.font_picker_negative_button_text), new
                 DialogInterface.OnClickListener() {
@@ -69,39 +99,72 @@ public class FontPickerDialogFragment extends DialogFragment {
                 });
 
         mDialog = builder.create();
-        createFontViews();
         initializeUpdateTimer();
         return mDialog;
     }
 
+    /**
+     * Initializes the runnable and handler that will be used to update the text for font views
+     * to indicate the current time.
+     */
     protected void initializeUpdateTimer() {
+        final int updateTime = 10;
         mUpdateViewHandler = new Handler();
         mUpdateViewRunnable = new Runnable() {
+            /** Holds current seconds value. Will be used to indicate if the FontViews should be
+             * updated or not. */
+            int currentSeconds;
+
+            /** Holds reference to the android calendar. */
+            Calendar calendar;
+
             @Override
             public void run() {
-                updateAllFontViews();
-                mUpdateViewHandler.postDelayed(this, 100);
+                if (calendar == null) {
+                    calendar = Calendar.getInstance();
+                }
+
+                // Update the calendar to reflect the current time.
+                calendar.setTimeInMillis(System.currentTimeMillis());
+
+                // If the value of the seconds updated then update the text for the font views.
+                if (currentSeconds != calendar.get(Calendar.SECOND)) {
+                    currentSeconds = calendar.get(Calendar.SECOND);
+                    updateAllFontViews();
+                }
+
+                mUpdateViewHandler.postDelayed(this, updateTime);
             }
         };
-
-        mUpdateViewHandler.postDelayed(mUpdateViewRunnable, 100);
+        mUpdateViewHandler.postDelayed(mUpdateViewRunnable, updateTime);
     }
 
+    /**
+     * Create the all of the FontViews. A FontView will be created for every font that is in the
+     * fonts asset folder.
+     */
     protected void createFontViews() {
         try {
+            fontViewList = new ArrayList<>();
             String[] typeFaces = getActivity().getAssets().list(TypeFaceUtil.getFontsPath(this
                     .getActivity().getApplicationContext()));
 
-            for (String strTypeface :
-                    typeFaces) {
+            for (String strTypeface : typeFaces)
                 initFontView(new FontView(getFontViewParentLayout().getContext()), strTypeface);
-            }
+
             getFontViewParentLayout().invalidate();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, String.format(Locale.US, "createFontViews: Unable to create FontViews %s",
+                    e));
         }
     }
 
+    /**
+     * Initializes necessary data/parameters for a font view.
+     *
+     * @param fontView    The FontView to initialize.
+     * @param strTypeface The name of the typeface.
+     */
     private void initFontView(final FontView fontView, String strTypeface) {
         try {
             initFontViewTypeface(fontView, strTypeface);
@@ -110,35 +173,46 @@ public class FontPickerDialogFragment extends DialogFragment {
             setupFontViewLayoutParams(fontView);
             addFontViewToParentView(fontView);
         } catch (Exception e) {
-            Log.e(TAG, e.toString());
+            Log.e(TAG, String.format("initFontView: Unable to initialize FontView %s", e));
         }
 
     }
 
+    /**
+     * Initializes the Typeface for a given FontView.
+     *
+     * @param fontView    The FontView to update.
+     * @param strTypeface The name of the Typeface.
+     */
     private void initFontViewTypeface(FontView fontView, String strTypeface) {
         fontView.setTypeface(TypeFaceUtil.createTypeFaceFromAssets(strTypeface, getActivity()
                 .getApplicationContext()));
         fontView.setFont(strTypeface);
         fontView.setTextColor(Color.BLACK);
-        // TODO add the text size to a resources file and use it here instead of this
-        // hardcoded value.
-        fontView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+        fontView.setTextSize(TypedValue.COMPLEX_UNIT_SP, R.integer.font_picker_font_size);
     }
 
+    /**
+     * Initializes OnClickListener for a given FontView.
+     *
+     * @param fontView FontView to add OnClickListener to.
+     */
     private void initFontViewClickListener(final FontView fontView) {
         fontView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences.Editor editor = getSharedPreferences().edit();
-                editor.putString(getString(R.string.time_typeface_key), fontView
-                        .getFont());
-                editor.apply();
+                getSharedPreferences().edit()
+                        .putString(getString(R.string.time_typeface_key), fontView.getFont())
+                        .apply();
                 mUpdateViewHandler.removeCallbacks(mUpdateViewRunnable);
                 mDialog.cancel();
             }
         });
     }
 
+    /**
+     * @param fontView
+     */
     private void addFontViewToParentView(FontView fontView) {
         getFontViewParentLayout().addView(fontView);
         fontViewList.add(fontView);
